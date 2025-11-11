@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5>任务处理中</h5>
+  <div class="text-muted small">主题：{{ brand }} · 时间窗：{{ window_days }} 天</div>
+ </div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-2">
+      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+      <div>正在生成报告（通常 ≤ 25 秒）。完成后将自动跳转至报告页面…</div>
+    </div>
+    <div class="form-text mt-2">如果长时间未完成，可以返回首页更换关键词或稍后重试。</div>
+  </div>
+</div>
+
+<!-- 任务元数据（避免在 JS 中直接嵌入模板表达式） -->
+<div id="task-meta" data-ts="{{ ts }}" data-brand="{{ brand }}" data-window-days="{{ window_days }}" hidden></div>
+
+<script>
+  // 轮询任务状态，完成后跳转到报告页
+  const metaEl = document.getElementById('task-meta');
+  const ts = metaEl ? metaEl.dataset.ts : '';
+  let tries = 0;
+  const poll = () => {
+    if (!ts) return; // 若缺少任务 ID，则不轮询
+    fetch(`/status/${encodeURIComponent(ts)}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.done) {
+          window.location.href = `/report/${encodeURIComponent(ts)}`;
+        } else {
+          tries++;
+          setTimeout(poll, 1500);
+        }
+      }).catch(() => setTimeout(poll, 2000));
+  };
+  poll();
+</script>
+{% endblock %}

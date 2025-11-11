@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="text-center mb-3">
+  <div style="font-weight:600;">致力于打造简洁通用的舆情分析平台</div>
+  <div class="small text-secondary">输入品牌与时间窗，点击“开始”即可生成仪表盘与报告</div>
+  <form class="d-flex align-items-center gap-2 mt-2" method="post" action="/analyze" enctype="multipart/form-data">
+    <div class="input-group">
+      <span class="input-group-text">分析主题</span>
+      <input type="text" class="form-control" name="brand" value="{{ default_brand }}" placeholder="品牌/产品/话题（例如：vivo）" aria-label="分析主题：品牌/产品/话题" required>
+    </div>
+    <div class="input-group" style="max-width:160px;">
+      <span class="input-group-text">时间窗</span>
+      <input type="number" class="form-control" name="window_days" value="{{ default_window }}" min="1" max="90" title="时间窗（单位：天）" placeholder="天" aria-label="时间窗口（天）">
+    </div>
+    <button class="btn btn-primary" type="submit">开始</button>
+    <label class="btn btn-outline-secondary mb-0">
+      上传数据
+      <input type="file" name="file" form="uploadForm" hidden>
+    </label>
+  </form>
+  <div class="form-text">说明：在“分析主题”中输入你要分析的品牌/产品或话题关键词；“时间窗”为最近多少天的数据范围。</div>
+  <form id="uploadForm" method="post" action="/upload" enctype="multipart/form-data" class="d-none"></form>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="text-muted small">说明</div>
+    <ul class="small text-secondary mb-0">
+      <li>数据来源：SearXNG 公共实例（全网检索）。</li>
+      <li>当前为 PoC 版本，整合与翻译为占位实现，接入 LLM Key 后质量将提升。</li>
+      <li>如需 PDF 导出，请安装 wkhtmltopdf。</li>
+    </ul>
+  </div>
+</div>
+<script>
+  // 自动提交上传表单
+  const uploadInput = document.querySelector('input[name="file"][form="uploadForm"]');
+  if (uploadInput) {
+    uploadInput.addEventListener('change', function(){
+      if (this.files && this.files.length) {
+        document.getElementById('uploadForm').appendChild(this.cloneNode());
+        document.getElementById('uploadForm').submit();
+      }
+    });
+  }
+</script>
+{% endblock %}
